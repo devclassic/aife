@@ -1,8 +1,3 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 router = APIRouter(prefix="/user")
-
-
-@router.get("/login")
-async def login():
-    return {"message": "Login"}
