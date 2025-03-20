@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from config import TORTOISE_ORM
 from controllers import routers
-from models.user import User
+from models import User
+from fastapi_pagination import add_pagination
 
 
 @asynccontextmanager
@@ -31,11 +32,23 @@ app.add_middleware(
 
 @app.middleware("http")
 async def auth(request: Request, call_next):
-    uncheck = [request.url.path.startswith("/auth/admin_login")]
+    if request.method == "OPTIONS":
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
+
+    path = request.url.path
+    uncheck = [path.startswith("/init") , path.startswith("/auth")]
+
     if any(uncheck):
         return await call_next(request)
+
     token = request.headers.get("token")
     user = await User.get_or_none(token=token, is_admin=True)
+
     if not user:
         return JSONResponse(content={"success": False, "message": "尚未登陆"})
     else:
@@ -44,6 +57,8 @@ async def auth(request: Request, call_next):
 
 for router in routers:
     app.include_router(router)
+
+add_pagination(app)
 
 if __name__ == "__main__":
     import uvicorn

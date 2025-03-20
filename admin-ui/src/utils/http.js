@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -13,6 +14,7 @@ http.interceptors.request.use(
     return config
   },
   error => {
+    ElMessage.error(error)
     return Promise.reject(error)
   },
 )

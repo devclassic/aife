@@ -35,13 +35,17 @@
   })
 
   const login = async () => {
-    const res = await http.post('/auth/admin_login', form)
-    if (res.data.success) {
-      ElMessage.success('登录成功')
-      sessionStorage.setItem('token', res.data.token)
-      router.push('/')
-    } else {
-      ElMessage.error(res.data.message)
+    try {
+      const res = await http.post('/auth/login', form)
+      if (res.data.success) {
+        ElMessage.success('登录成功')
+        sessionStorage.setItem('token', res.data.token)
+        router.push('/')
+      } else {
+        ElMessage.error(res.data.message)
+      }
+    } catch (e) {
+      ElMessage.error(e)
     }
   }
 </script>
