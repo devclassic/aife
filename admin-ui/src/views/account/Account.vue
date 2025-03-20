@@ -54,20 +54,20 @@
     width="500"
     :title="data.editType == 'add' ? '添加账户' : '编辑账户'">
     <el-form label-width="auto">
-      <el-form-item label="名称" class="form-item">
+      <el-form-item label="名称">
         <el-input v-model="data.account.name" placeholder="请输入账户" />
       </el-form-item>
-      <el-form-item label="账户" class="form-item">
+      <el-form-item label="账户">
         <el-input v-model="data.account.account" placeholder="请输入账户" />
       </el-form-item>
-      <el-form-item label="密码" class="form-item">
+      <el-form-item label="密码">
         <el-input
           type="password"
           show-password
           v-model="data.account.password"
           placeholder="请输入密码" />
       </el-form-item>
-      <el-form-item label="应用" class="form-item">
+      <el-form-item label="应用">
         <el-select v-model="data.apps.value" multiple placeholder="请选择关联应用">
           <el-option
             v-for="item in data.apps.options"

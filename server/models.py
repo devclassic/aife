@@ -26,3 +26,10 @@ class Account(models.Model):
     password = fields.CharField(max_length=255)
     token = fields.CharField(max_length=255, null=True)
     apps = fields.CharField(max_length=1000, null=True)
+
+
+# 字典
+class Dict(models.Model):
+    id = fields.IntField(pk=True)
+    key = fields.CharField(max_length=255)
+    value = fields.CharField(max_length=5000)

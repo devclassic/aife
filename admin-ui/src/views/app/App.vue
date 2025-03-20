@@ -54,13 +54,13 @@
     width="500"
     :title="data.editType == 'add' ? '添加应用' : '编辑应用'">
     <el-form label-width="auto">
-      <el-form-item label="名称" class="form-item">
+      <el-form-item label="名称">
         <el-input v-model="data.app.name" placeholder="请输入名称" />
       </el-form-item>
-      <el-form-item label="appid" class="form-item">
+      <el-form-item label="appid">
         <el-input v-model="data.app.appid" placeholder="请输入appid" />
       </el-form-item>
-      <el-form-item label="token" class="form-item">
+      <el-form-item label="token">
         <el-input v-model="data.app.token" placeholder="请输入token" />
       </el-form-item>
     </el-form>

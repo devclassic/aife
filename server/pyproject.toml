@@ -7,5 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi-pagination>=0.12.34",
     "fastapi[standard]>=0.115.11",
+    "requests>=2.32.3",
     "tortoise-orm>=0.24.2",
 ]
