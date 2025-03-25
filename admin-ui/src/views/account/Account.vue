@@ -23,7 +23,7 @@
     <el-table-column type="selection" width="38" />
     <el-table-column prop="name" label="名称" />
     <el-table-column prop="account" label="账户" />
-    <el-table-column prop="appnames" label="关联应用" />
+    <el-table-column prop="appnames" label="关联应用" show-overflow-tooltip />
     <el-table-column label="操作">
       <template #default="scope">
         <el-button link type="success" size="small" @click="update(scope.row.id)">编辑</el-button>

@@ -12,7 +12,8 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item @click="showSettings">设置</el-dropdown-item>
+          <el-dropdown-item v-if="isroot" @click="showSettings">设置</el-dropdown-item>
+          <el-dropdown-item disabled>其他功能</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -47,7 +48,11 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="data.showKnowledge" width="500" :title="data.knowledgeName">
+  <el-dialog
+    v-model="data.showKnowledge"
+    width="500"
+    :title="data.knowledgeName"
+    @close="closeKnowledge">
     <div class="knowledge-toolbar">
       <el-dropdown trigger="click">
         <el-button type="primary">
@@ -63,6 +68,13 @@
     </div>
     <el-table v-loading="data.showCollectionsLoading" :data="data.collections" border stripe>
       <el-table-column prop="name" label="名称" />
+      <el-table-column label="状态" width="90">
+        <template #default="scope">
+          <el-tag :type="scope.row.trainingAmount > 0 ? 'info' : 'success'">
+            {{ scope.row.trainingAmount > 0 ? '处理中' : '就绪' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="100">
         <template #default="scope">
           <el-popconfirm
@@ -78,8 +90,8 @@
       </el-table-column>
     </el-table>
     <template #footer>
-      <el-button @click="data.showKnowledge = false">取消</el-button>
-      <el-button type="primary" @click="data.showKnowledge = false">确定</el-button>
+      <el-button @click="closeKnowledge">取消</el-button>
+      <el-button type="primary" @click="closeKnowledge">确定</el-button>
     </template>
   </el-dialog>
 
@@ -124,6 +136,8 @@
   import { ElMessage } from 'element-plus'
   import http from '../../utils/http'
 
+  const isroot = sessionStorage.getItem('user') === 'root'
+
   const api_base_url = import.meta.env.VITE_API_BASE_URL
   const token = sessionStorage.getItem('token')
 
@@ -160,6 +174,7 @@
   const showUpload = async () => {
     data.files = []
     data.showUpload = true
+    data.trainingType = ''
   }
 
   const uploadOK = async () => {
@@ -175,6 +190,7 @@
         trainingType: data.trainingType,
       })
       if (res.data.success) {
+        data.trainingType = ''
         data.files = []
         data.uploadRef.clearFiles()
         getCollections()
@@ -194,6 +210,7 @@
   }
 
   const removeCollection = async id => {
+    data.showCollectionsLoading = true
     const res = await http.post('/knowledge/remove_collection', {
       id,
     })
@@ -204,23 +221,40 @@
     data.files.push(res.data)
   }
 
-  const getCollections = async () => {
-    data.showCollectionsLoading = true
+  const getCollections = async (loading = true) => {
+    loading && (data.showCollectionsLoading = true)
     const res = await http.post('/knowledge/collection', {
       id: data.knowledgeId,
     })
     data.collections = res.data.data
-    data.showCollectionsLoading = false
+    loading && (data.showCollectionsLoading = false)
+    !loading && console.log('刷新知识库状态')
   }
 
-  const showKnowledge = async row => {
+  let refreshCollectionsTimer = null
+  const refreshCollection = () => {
+    refreshCollectionsTimer = setInterval(() => {
+      getCollections(false)
+    }, 2000)
+  }
+  const clearRefreshCollection = () => {
+    clearInterval(refreshCollectionsTimer)
+  }
+
+  const showKnowledge = row => {
     data.knowledgeId = row.id
     getCollections()
     data.knowledgeName = row.name
     data.showKnowledge = true
+    refreshCollection()
   }
 
-  const getList = async (page = 1) => {
+  const closeKnowledge = () => {
+    data.showKnowledge = false
+    clearRefreshCollection()
+  }
+
+  const getList = async () => {
     const res = await http.post('/knowledge/list')
     if (res.data.data) {
       data.list = res.data.data.map(item => ({

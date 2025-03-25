@@ -21,8 +21,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   if (to.path !== '/login') {
-    const token = sessionStorage.getItem('token')
-    const res = await http.post('/auth/check', {}, { headers: { token } })
+    const res = await http.post('/auth/check')
     if (res.data.success) {
       return next()
     }

@@ -39,6 +39,7 @@
       const res = await http.post('/auth/login', form)
       if (res.data.success) {
         ElMessage.success('登录成功')
+        sessionStorage.setItem('user', form.username)
         sessionStorage.setItem('token', res.data.token)
         router.push('/')
       } else {

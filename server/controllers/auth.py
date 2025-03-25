@@ -21,8 +21,10 @@ async def login(request: Request):
 @router.post("/check")
 async def logout(request: Request):
     token = request.headers.get("token")
-    user = await User.get_or_none(token=token)
-    if not user:
+    if not token:
         return {"success": False, "message": "尚未登录"}
-    else:
+    user = await User.get_or_none(token=token)
+    if user:
         return {"success": True, "message": "已登录"}
+    else:
+        return {"success": False, "message": "尚未登录"}
