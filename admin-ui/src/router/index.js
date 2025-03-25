@@ -10,6 +10,7 @@ const router = createRouter({
       component: () => import('../views/main/Main.vue'),
       children: [
         { path: '', component: () => import('../views/index/Index.vue') },
+        { path: 'user', component: () => import('../views/user/User.vue') },
         { path: 'app', component: () => import('../views/app/App.vue') },
         { path: 'account', component: () => import('../views/account/Account.vue') },
         { path: 'data', component: () => import('../views/data/Data.vue') },

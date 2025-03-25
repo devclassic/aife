@@ -22,10 +22,11 @@
 </template>
 
 <script setup>
-  import { reactive } from 'vue'
+  import { reactive, onMounted, onUnmounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { ElMessage } from 'element-plus'
   import http from '../../utils/http'
+  import { en } from 'element-plus/es/locales.mjs'
 
   const router = useRouter()
 
@@ -49,6 +50,20 @@
       ElMessage.error(e)
     }
   }
+
+  const enter = e => {
+    if (e.key === 'Enter') {
+      login()
+    }
+  }
+
+  onMounted(() => {
+    addEventListener('keydown', enter)
+  })
+
+  onUnmounted(() => {
+    removeEventListener('keydown', enter)
+  })
 </script>
 
 <style scoped>

@@ -8,6 +8,11 @@ from config import TORTOISE_ORM
 from controllers import routers
 from models import User
 from fastapi_pagination import add_pagination
+import os
+
+upload_dir = "database"
+if not os.path.exists(upload_dir):
+    os.makedirs(upload_dir)
 
 
 @asynccontextmanager
@@ -41,7 +46,7 @@ async def auth(request: Request, call_next):
         return response
 
     path = request.url.path
-    uncheck = [path.startswith("/init") , path.startswith("/auth")]
+    uncheck = [path.startswith("/init"), path.startswith("/auth")]
 
     if any(uncheck):
         return await call_next(request)
