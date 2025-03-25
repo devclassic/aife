@@ -43,7 +43,7 @@
     </el-form>
     <template #footer>
       <el-button @click="data.showSettings = false">取消</el-button>
-      <el-button type="primary" @click="editOK">确定</el-button>
+      <el-button type="primary" @click="settingsOK">确定</el-button>
     </template>
   </el-dialog>
 
@@ -61,7 +61,7 @@
         </template>
       </el-dropdown>
     </div>
-    <el-table :data="data.collections" border stripe>
+    <el-table v-loading="data.showCollectionsLoading" :data="data.collections" border stripe>
       <el-table-column prop="name" label="名称" />
       <el-table-column label="操作" width="100">
         <template #default="scope">
@@ -84,6 +84,17 @@
   </el-dialog>
 
   <el-dialog v-model="data.showUpload" width="500" title="上传文件">
+    <el-form label-width="auto">
+      <el-form-item label="处理模式" style="margin-bottom: 10px">
+        <el-select v-model="data.trainingType" placeholder="请选择处理模式">
+          <el-option
+            v-for="item in data.trainingTypeOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value" />
+        </el-select>
+      </el-form-item>
+    </el-form>
     <el-upload
       ref="upload"
       drag
@@ -96,7 +107,7 @@
         <em>点击上传</em>
       </div>
       <template #tip>
-        <div class="el-upload__tip">请上传常见文档类型</div>
+        <div class="el-upload__tip">请上传常见文档类型（txt, pdf, docx, md, txt, html, csv）</div>
       </template>
     </el-upload>
     <template #footer>
@@ -123,7 +134,19 @@
     knowledgeName: '',
     knowledgeId: '',
     showKnowledge: false,
+    trainingType: '',
+    trainingTypeOptions: [
+      {
+        label: '分段',
+        value: 'chunk',
+      },
+      {
+        label: '问答',
+        value: 'qa',
+      },
+    ],
     showUpload: false,
+    showCollectionsLoading: false,
     showUploadBtnLoding: false,
     uploadRef: useTemplateRef('upload'),
     files: [],
@@ -141,10 +164,15 @@
 
   const uploadOK = async () => {
     try {
+      if (!data.trainingType) {
+        ElMessage.error('请选择处理模式')
+        return
+      }
       data.showUploadBtnLoding = true
       const res = await http.post('/knowledge/add_file_collection', {
         files: data.files,
         datasetId: data.knowledgeId,
+        trainingType: data.trainingType,
       })
       if (res.data.success) {
         data.files = []
@@ -177,10 +205,12 @@
   }
 
   const getCollections = async () => {
+    data.showCollectionsLoading = true
     const res = await http.post('/knowledge/collection', {
       id: data.knowledgeId,
     })
     data.collections = res.data.data
+    data.showCollectionsLoading = false
   }
 
   const showKnowledge = async row => {
@@ -192,17 +222,21 @@
 
   const getList = async (page = 1) => {
     const res = await http.post('/knowledge/list')
-    data.list = res.data.data.map(item => ({
-      id: item._id,
-      name: item.name,
-    }))
+    if (res.data.data) {
+      data.list = res.data.data.map(item => ({
+        id: item._id,
+        name: item.name,
+      }))
+    } else {
+      data.list = []
+    }
   }
 
   onMounted(() => {
     getList()
   })
 
-  const editOK = async () => {
+  const settingsOK = async () => {
     const res = await http.post('/knowledge/set_settings', data.settings)
     ElMessage.success('保存成功')
     data.showSettings = false

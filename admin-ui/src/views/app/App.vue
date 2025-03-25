@@ -23,7 +23,7 @@
     <el-table-column type="selection" width="38" />
     <el-table-column prop="name" label="名称" />
     <el-table-column prop="appid" label="AppID" />
-    <el-table-column prop="token" label="Token" />
+    <el-table-column prop="token" label="Token" show-overflow-tooltip />
     <el-table-column label="操作">
       <template #default="scope">
         <el-button link type="success" size="small" @click="update(scope.row.id)">编辑</el-button>
