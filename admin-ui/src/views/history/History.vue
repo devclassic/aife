@@ -1,7 +1,7 @@
 <template>
   <el-breadcrumb>
     <el-breadcrumb-item to="/">首页</el-breadcrumb-item>
-    <el-breadcrumb-item>用户管理</el-breadcrumb-item>
+    <el-breadcrumb-item>数据管理</el-breadcrumb-item>
   </el-breadcrumb>
 
   <div class="toolbar">
@@ -12,7 +12,6 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item @click="add">添加用户</el-dropdown-item>
           <el-dropdown-item @click="removeBatch">批量删除</el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -21,17 +20,15 @@
 
   <el-table :data="data.list" ref="list" border stripe>
     <el-table-column type="selection" width="38" />
-    <el-table-column prop="username" label="用户名" />
-    <el-table-column label="类型">
-      <template #default="scope">
-        <span v-if="scope.row.is_admin == 1">管理员</span>
-        <span v-else>普通用户</span>
-      </template>
-    </el-table-column>
-    <el-table-column prop="token" label="Token" show-overflow-tooltip />
+    <el-table-column prop="account.name" label="账户" />
+    <el-table-column prop="app.name" label="应用" />
+    <el-table-column prop="question_time" label="提问时间" />
+    <el-table-column prop="question" label="问题" show-overflow-tooltip />
+    <el-table-column prop="answer_time" label="回答时间" />
+    <el-table-column prop="answer" label="回答" show-overflow-tooltip />
     <el-table-column label="操作">
       <template #default="scope">
-        <el-button link type="success" size="small" @click="update(scope.row.id)">编辑</el-button>
+        <el-button link type="primary" size="small" @click="showInfo(scope.row.id)">查看</el-button>
         <el-popconfirm
           title="确认删除？"
           confirm-button-text="确定"
@@ -54,54 +51,44 @@
       @current-change="pageChange" />
   </div>
 
-  <el-dialog
-    v-model="data.showEditDialog"
-    width="500"
-    :title="data.editType == 'add' ? '添加应用' : '编辑应用'">
-    <el-form label-width="auto">
-      <el-form-item label="用户名">
-        <el-input v-model="data.user.username" placeholder="请输入名称" />
-      </el-form-item>
-      <el-form-item label="密码">
-        <el-input
-          v-model="data.user.password"
-          placeholder="请输入appid"
-          type="password"
-          show-password />
-      </el-form-item>
-    </el-form>
+  <el-dialog v-model="data.showInfoDialog" width="500" title="查看数据">
+    <div style="color: red">问题 {{ data.history.question_time }}：</div>
+    <div style="margin-bottom: 10px">{{ data.history.question }}</div>
+    <div style="color: blue">回答 {{ data.history.answer_time }}：</div>
+    <div ref="answerRef"></div>
     <template #footer>
-      <el-button @click="data.showEditDialog = false">取消</el-button>
-      <el-button type="primary" @click="editOK">确定</el-button>
+      <el-button @click="data.showInfoDialog = false">取消</el-button>
+      <el-button type="primary" @click="data.showInfoDialog = false">确定</el-button>
     </template>
   </el-dialog>
 </template>
 
 <script setup>
-  import { onMounted, reactive, useTemplateRef } from 'vue'
+  import { onMounted, reactive, useTemplateRef, computed, nextTick } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
-  import _ from 'lodash-es'
+  import markdown from 'markdown-it'
   import http from '../../utils/http'
+
+  const md = markdown()
 
   const data = reactive({
     list: [],
     tableRef: useTemplateRef('list'),
-    showEditDialog: false,
-    editType: 'add',
-    user: {
-      username: '',
-      passowrd: '',
-      is_admin: 1,
-    },
+    showInfoDialog: false,
+    answerRef: useTemplateRef('answerRef'),
+    history: {},
     pager: {
       page: 1,
       count: 0,
     },
   })
 
+  const answerHTML = computed(() => {
+    return md.render(data.history.answer)
+  })
+
   const getList = async (page = 1) => {
-    const res = await http.post(`/user/list?page=${page}&size=10`)
-    _.remove(res.data.data.items, { username: 'root' })
+    const res = await http.post(`/history/list?page=${page}&size=10`)
     data.list = res.data.data.items
     data.pager.page = res.data.data.page
     data.pager.count = res.data.data.pages
@@ -115,25 +102,8 @@
     getList()
   })
 
-  const add = () => {
-    data.showEditDialog = true
-    data.editType = 'add'
-    data.user = {
-      username: '',
-      password: '',
-      is_admin: 1,
-    }
-  }
-
-  const update = async id => {
-    data.showEditDialog = true
-    data.editType = 'update'
-    const res = await http.post('/user/get', { id })
-    data.user = res.data.data
-  }
-
   const remove = async id => {
-    const res = await http.post('/user/remove', { id })
+    const res = await http.post('/history/remove', { id })
     if (res.data.success) {
       ElMessage.success(res.data.message)
       getList()
@@ -152,7 +122,7 @@
         return
       }
       const ids = rows.map(row => row.id)
-      const res = await http.post('/user/remove_batch', { ids })
+      const res = await http.post('/history/remove_batch', { ids })
       if (res.data.success) {
         ElMessage.success(res.data.message)
         getList()
@@ -160,14 +130,13 @@
     })
   }
 
-  const editOK = async () => {
-    if (data.editType === 'add') {
-      const res = await http.post('/user/add', data.user)
-    } else {
-      const res = await http.post('/user/update', data.user)
-    }
-    ElMessage.success('保存成功')
-    data.showEditDialog = false
-    getList()
+  const showInfo = async id => {
+    data.history = {}
+    data.showInfoDialog = true
+    const res = await http.post('/history/get', { id })
+    data.history = res.data.data
+    nextTick(() => {
+      data.answerRef.innerHTML = answerHTML.value
+    })
   }
 </script>

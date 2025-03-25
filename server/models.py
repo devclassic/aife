@@ -33,3 +33,16 @@ class Dict(models.Model):
     id = fields.IntField(pk=True)
     key = fields.CharField(max_length=255)
     value = fields.CharField(max_length=5000)
+
+
+# 历史数据
+class History(models.Model):
+    id = fields.IntField(pk=True)
+    account = fields.OneToOneField("models.Account", related_name="history")
+    app = fields.OneToOneField("models.App", related_name="history")
+    question = fields.CharField(max_length=5000)
+    answer = fields.CharField(max_length=5000)
+    question_audio_url = fields.CharField(max_length=5000, null=True)
+    answer_audio_url = fields.CharField(max_length=5000, null=True)
+    question_time = fields.DatetimeField(null=True)
+    answer_time = fields.DatetimeField(null=True)

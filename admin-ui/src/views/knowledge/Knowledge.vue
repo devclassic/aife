@@ -1,7 +1,7 @@
 <template>
   <el-breadcrumb>
     <el-breadcrumb-item to="/">首页</el-breadcrumb-item>
-    <el-breadcrumb-item>应用管理</el-breadcrumb-item>
+    <el-breadcrumb-item>知识库管理</el-breadcrumb-item>
   </el-breadcrumb>
 
   <div class="toolbar">

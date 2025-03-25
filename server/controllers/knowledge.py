@@ -33,7 +33,6 @@ async def list():
     knowledge_base = await get_dict("knowledge_base")
     api_base = await get_dict("api_base")
     api_base_token = await get_dict("api_base_token")
-    knowledge_base = knowledge_base.strip()
     if not knowledge_base:
         return {"success": True, "message": "获取成功", "data": []}
     bases = knowledge_base.split(",")
@@ -80,7 +79,9 @@ async def add_file_collection(request: Request):
     url = f"{api_base}/core/dataset/collection/create/localFile"
     headers = {"Authorization": f"Bearer {api_base_token}"}
     send_data = {
-        "data": json.dumps({"datasetId": data["datasetId"], "trainingType": data["trainingType"]})
+        "data": json.dumps(
+            {"datasetId": data["datasetId"], "trainingType": data["trainingType"]}
+        )
     }
     localFiles = data["files"]
     for file in localFiles:
