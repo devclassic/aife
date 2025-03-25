@@ -67,7 +67,7 @@
       </el-dropdown>
     </div>
     <el-table v-loading="data.showCollectionsLoading" :data="data.collections" border stripe>
-      <el-table-column prop="name" label="名称" />
+      <el-table-column prop="name" label="名称" show-overflow-tooltip />
       <el-table-column label="状态" width="90">
         <template #default="scope">
           <el-tag :type="scope.row.trainingAmount > 0 ? 'info' : 'success'">

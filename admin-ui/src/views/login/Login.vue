@@ -26,7 +26,6 @@
   import { useRouter } from 'vue-router'
   import { ElMessage } from 'element-plus'
   import http from '../../utils/http'
-  import { en } from 'element-plus/es/locales.mjs'
 
   const router = useRouter()
 
