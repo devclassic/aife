@@ -46,7 +46,12 @@ async def auth(request: Request, call_next):
         return response
 
     path = request.url.path
-    uncheck = [path.startswith("/init"), path.startswith("/auth")]
+    
+    uncheck = [
+        path.startswith("/init"),
+        path.startswith("/auth"),
+        path.startswith("/client"),
+    ]
 
     if any(uncheck):
         return await call_next(request)
