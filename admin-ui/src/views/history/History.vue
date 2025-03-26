@@ -66,6 +66,7 @@
 <script setup>
   import { onMounted, reactive, useTemplateRef, computed, nextTick } from 'vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
+  import { formatInTimeZone } from 'date-fns-tz'
   import markdown from 'markdown-it'
   import http from '../../utils/http'
 
@@ -89,7 +90,15 @@
 
   const getList = async (page = 1) => {
     const res = await http.post(`/history/list?page=${page}&size=10`)
-    data.list = res.data.data.items
+    data.list = res.data.data.items.map(item => {
+      item.question_time = formatInTimeZone(
+        new Date(item.question_time),
+        'UTC',
+        'yyyy-MM-dd HH:mm:ss',
+      )
+      item.answer_time = formatInTimeZone(new Date(item.answer_time), 'UTC', 'yyyy-MM-dd HH:mm:ss')
+      return item
+    })
     data.pager.page = res.data.data.page
     data.pager.count = res.data.data.pages
   }
@@ -135,6 +144,16 @@
     data.showInfoDialog = true
     const res = await http.post('/history/get', { id })
     data.history = res.data.data
+    data.history.question_time = formatInTimeZone(
+      new Date(data.history.question_time),
+      'UTC',
+      'yyyy-MM-dd HH:mm:ss',
+    )
+    data.history.answer_time = formatInTimeZone(
+      new Date(data.history.answer_time),
+      'UTC',
+      'yyyy-MM-dd HH:mm:ss',
+    )
     nextTick(() => {
       data.answerRef.innerHTML = answerHTML.value
     })

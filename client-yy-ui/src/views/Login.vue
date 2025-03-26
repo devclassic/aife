@@ -3,6 +3,9 @@
     <template #header>登录</template>
     <div>
       <el-form label-width="auto">
+        <el-form-item label="语音" class="form-item">
+          <el-input v-model="form.voice" placeholder="请输入语音识别服务地址" />
+        </el-form-item>
         <el-form-item label="账户" class="form-item">
           <el-input v-model="form.account" placeholder="请输入账户" />
         </el-form-item>
@@ -30,25 +33,28 @@
   const router = useRouter()
 
   const form = reactive({
+    voice: '',
     account: '',
     password: '',
   })
 
   const login = async () => {
-    //   try {
-    //     const res = await http.post('/auth/login', form)
-    //     if (res.data.success) {
-    //       ElMessage.success('登录成功')
-    //       sessionStorage.setItem('user', form.username)
-    //       sessionStorage.setItem('token', res.data.token)
-    //       router.push('/')
-    //     } else {
-    //       ElMessage.error(res.data.message)
-    //     }
-    //   } catch (e) {
-    //     ElMessage.error(e)
-    //   }
-    router.push('/')
+    const res = await http.post('/client/login', form)
+    if (res.data.success) {
+      const apps = res.data.data.apps.split(',')
+      if (apps.length > 0) {
+        localStorage.setItem('app_id', apps[0])
+        localStorage.setItem('token', res.data.data.token)
+        localStorage.setItem('account_id', res.data.data.id)
+        localStorage.setItem('wsurl', form.voice)
+        ElMessage.success('登录成功')
+        router.push('/')
+      } else {
+        ElMessage.warning('当前账户未绑定应用')
+      }
+    } else {
+      ElMessage.error(res.data.message)
+    }
   }
 
   const enter = e => {
@@ -58,6 +64,7 @@
   }
 
   onMounted(() => {
+    form.voice = localStorage.getItem('wsurl') || ''
     addEventListener('keydown', enter)
   })
 

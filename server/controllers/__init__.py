@@ -5,6 +5,7 @@ from .app import router as app_router
 from .account import router as account_router
 from .knowledge import router as knowledge_router
 from .history import router as history_router
+from .client import router as client_router
 
 routers = [
     auth_router,
@@ -14,4 +15,5 @@ routers = [
     account_router,
     knowledge_router,
     history_router,
+    client_router,
 ]
