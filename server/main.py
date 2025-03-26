@@ -9,6 +9,7 @@ from controllers import routers
 from models import User
 from fastapi_pagination import add_pagination
 import os
+from fastapi.staticfiles import StaticFiles
 
 upload_dir = "database"
 if not os.path.exists(upload_dir):
@@ -26,6 +27,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.mount("/public", StaticFiles(directory="public", html=True))
+
 
 @app.middleware("http")
 async def auth(request: Request, call_next):
@@ -34,6 +37,7 @@ async def auth(request: Request, call_next):
         path.startswith("/init"),
         path.startswith("/auth"),
         path.startswith("/client"),
+        path.startswith("/public"),
     ]
     if any(uncheck):
         return await call_next(request)
