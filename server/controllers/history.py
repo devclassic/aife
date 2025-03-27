@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi_pagination import Params
 from fastapi_pagination.ext.tortoise import paginate
+from fastapi.responses import StreamingResponse
 from models import History
 from dtos.common import DataList, HistoryPydantic
+import pandas as pd
+import io
 
 router = APIRouter(prefix="/history")
 
@@ -40,3 +43,35 @@ async def list(params: Params = Depends()):
     )
     result = DataList[HistoryPydantic](success=True, message="获取成功", data=historys)
     return result
+
+
+@router.get("/export")
+async def export():
+    historys = await History.all().select_related("account", "app").order_by("-id")
+    data = {
+        "账户": [],
+        "应用": [],
+        "提问时间": [],
+        "问题": [],
+        "回答时间": [],
+        "回答": [],
+    }
+    for history in historys:
+        data["账户"].append(history.account.name)
+        data["应用"].append(history.app.name)
+        data["提问时间"].append(history.question_time.strftime("%Y-%m-%d %H:%M:%S"))
+        data["问题"].append(history.question)
+        data["回答时间"].append(history.answer_time.strftime("%Y-%m-%d %H:%M:%S"))
+        data["回答"].append(history.answer)
+    df = pd.DataFrame(data)
+    buffer = io.BytesIO()
+    df.to_excel(buffer, index=False)
+    buffer.seek(0)
+    excel_bytes = buffer.getvalue()
+    headers = {
+        "Content-Disposition": f"attachment; filename={"问答历史数据".encode("utf-8").decode("latin1")}.xlsx"
+    }
+    media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    return StreamingResponse(
+        io.BytesIO(excel_bytes), media_type=media_type, headers=headers
+    )

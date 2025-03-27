@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,6 +37,7 @@ async def auth(request: Request, call_next):
         path.startswith("/auth"),
         path.startswith("/client"),
         path.startswith("/public"),
+        path.startswith("/history/export"),
     ]
     if any(uncheck):
         return await call_next(request)

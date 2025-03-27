@@ -12,6 +12,7 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
+          <el-dropdown-item @click="exportdata">导出数据</el-dropdown-item>
           <el-dropdown-item @click="removeBatch">批量删除</el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -55,7 +56,7 @@
     <div style="color: red">问题 {{ data.history.question_time }}：</div>
     <div style="margin-bottom: 10px">{{ data.history.question }}</div>
     <div style="color: blue">回答 {{ data.history.answer_time }}：</div>
-    <div ref="answerRef"></div>
+    <div v-html="data.history.answer"></div>
     <template #footer>
       <el-button @click="data.showInfoDialog = false">取消</el-button>
       <el-button type="primary" @click="data.showInfoDialog = false">确定</el-button>
@@ -76,7 +77,6 @@
     list: [],
     tableRef: useTemplateRef('list'),
     showInfoDialog: false,
-    answerRef: useTemplateRef('answerRef'),
     history: {},
     pager: {
       page: 1,
@@ -84,9 +84,12 @@
     },
   })
 
-  const answerHTML = computed(() => {
-    return md.render(data.history.answer)
-  })
+  const exportdata = async () => {
+    const a = document.createElement('a')
+    a.href = import.meta.env.VITE_API_BASE_URL + '/history/export'
+    a.download = '问答历史数据.xlsx'
+    a.click()
+  }
 
   const getList = async (page = 1) => {
     const res = await http.post(`/history/list?page=${page}&size=10`)
@@ -154,8 +157,6 @@
       'UTC',
       'yyyy-MM-dd HH:mm:ss',
     )
-    nextTick(() => {
-      data.answerRef.innerHTML = answerHTML.value
-    })
+    data.history.answer = md.render(data.history.answer)
   }
 </script>
