@@ -41,7 +41,7 @@
 <script setup>
   import { reactive, useTemplateRef, nextTick } from 'vue'
   import { useRouter } from 'vue-router'
-  import { ElMessageBox } from 'element-plus'
+  import { ElMessageBox, ElMessage } from 'element-plus'
   import { v4 as uuidv4 } from 'uuid'
   import markdown from 'markdown-it'
   import Asr from '../utils/asr'
@@ -54,7 +54,7 @@
   const data = reactive({
     input: '',
     recordDisabled: true,
-    submitDisabled: true,
+    submitDisabled: false,
     newDisabled: true,
     isRecording: false,
     recordBtnText: '开始收音',
@@ -130,6 +130,19 @@
     data.input = text
   }
 
+  asr.onopen = () => {
+    ElMessage.success('连接语音识别服务成功')
+  }
+
+  asr.onerror = e => {
+    ElMessageBox.alert('连接语音识别服务错误', '提示')
+  }
+
+  asr.onclose = () => {
+    data.recordDisabled = true
+    data.newDisabled = true
+  }
+
   asr.getPermission().then(
     () => {
       data.recordDisabled = false
@@ -137,6 +150,8 @@
       data.newDisabled = false
     },
     e => {
+      data.recordDisabled = true
+      data.newDisabled = true
       console.log('获取录音权限失败', e)
       ElMessageBox.alert('获取录音权限失败，请检查浏览器设置或语音服务配置', '提示')
     },

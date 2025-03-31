@@ -2,7 +2,10 @@ import Recorder from 'js-audio-recorder'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
 class Asr {
+  onopen = () => {}
   ontext = text => {}
+  onerror = () => {}
+  onclose = () => {}
   constructor() {
     this.recorder = new Recorder({
       sampleBits: 16,
@@ -21,6 +24,7 @@ class Asr {
         is_speaking: false,
       }
       this.ws.send(JSON.stringify(request))
+      this.onopen()
     })
     this.ws.addEventListener('message', e => {
       const data = JSON.parse(e.data)
@@ -34,9 +38,11 @@ class Asr {
     })
     this.ws.addEventListener('error', e => {
       console.log('ASR服务连接错误', e)
+      this.onerror(e)
     })
     this.ws.addEventListener('close', () => {
       console.log('ASR服务连接关闭')
+      this.onclose()
     })
   }
 

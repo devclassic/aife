@@ -5,6 +5,7 @@ import shutil
 import os
 import json
 from urllib.parse import quote
+from httpx import AsyncClient
 
 router = APIRouter(prefix="/knowledge")
 
@@ -40,7 +41,10 @@ async def list():
     for id in bases:
         url = f"{api_base}/core/dataset/detail?id={id}"
         headers = {"Authorization": f"Bearer {api_base_token}"}
-        response = requests.get(url, headers=headers)
+        # response = requests.get(url, headers=headers)
+        response = None
+        async with AsyncClient() as client:
+            response = await client.get(url, headers=headers)
         result = response.json()
         data.append(result["data"])
     return {"success": True, "message": "获取成功", "data": data}
@@ -54,7 +58,10 @@ async def collection(request: Request):
     url = f"{api_base}/core/dataset/collection/listV2"
     headers = {"Authorization": f"Bearer {api_base_token}"}
     data = {"datasetId": data["id"], "pageSize": 100000}
-    response = requests.get(url, data=data, headers=headers)
+    # response = requests.post(url, data=data, headers=headers)
+    response = None
+    async with AsyncClient() as client:
+        response = await client.post(url, data=data, headers=headers)
     result = response.json()
     return {"success": True, "message": "获取成功", "data": result["data"]["list"]}
 
@@ -66,7 +73,10 @@ async def remove_collection(request: Request):
     api_base_token = await get_dict("api_base_token")
     url = f"{api_base}/core/dataset/collection/delete?id={data['id']}"
     headers = {"Authorization": f"Bearer {api_base_token}"}
-    response = requests.delete(url, headers=headers)
+    # response = requests.delete(url, headers=headers)
+    response = None
+    async with AsyncClient() as client:
+        response = await client.delete(url, headers=headers)
     result = response.json()
     return {"success": True, "message": "删除成功", "data": result["data"]}
 
@@ -88,9 +98,14 @@ async def add_file_collection(request: Request):
         files = {
             "file": (quote(os.path.basename(file)), open(file, "rb")),
         }
-        response = requests.post(url, data=send_data, files=files, headers=headers)
+        # response = requests.post(url, data=send_data, files=files, headers=headers)
+        response = None
+        async with AsyncClient() as client:
+            response = await client.post(
+                url, data=send_data, files=files, headers=headers
+            )
         result = response.json()
-    return {"success": True, "message": "添加成功", "data": {}}
+    return {"success": True, "message": "添加成功", "data": result}
 
 
 @router.post("/upload")

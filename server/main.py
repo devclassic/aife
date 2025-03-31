@@ -26,7 +26,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.mount("/public", StaticFiles(directory="public", html=True))
+app.mount("/ui", StaticFiles(directory="public/ui", html=True))
+app.mount("/admin", StaticFiles(directory="public/admin", html=True))
 
 
 @app.middleware("http")
@@ -38,6 +39,8 @@ async def auth(request: Request, call_next):
         path.startswith("/client"),
         path.startswith("/public"),
         path.startswith("/history/export"),
+        path.startswith("/ui"),
+        path.startswith("/admin"),
     ]
     if any(uncheck):
         return await call_next(request)

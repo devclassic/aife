@@ -4,6 +4,7 @@ from uuid import uuid4
 from service.common import get_dict
 import requests
 from datetime import datetime
+from httpx import AsyncClient
 
 router = APIRouter(prefix="/client")
 
@@ -68,7 +69,11 @@ async def chat(request: Request):
     headers = {
         "Authorization": f"Bearer {token}",
     }
-    res = requests.post(url, json=data, headers=headers).json()
+    # res = requests.post(url, json=data, headers=headers).json()
+    res = None
+    async with AsyncClient(timeout=None) as client:
+        res = await client.post(url, json=data, headers=headers)
+        res = res.json()
     text = res["choices"][0]["message"]["content"]
     history["answer"] = text
     history["answer_time"] = datetime.now()
