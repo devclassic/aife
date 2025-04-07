@@ -65,7 +65,7 @@
       <el-form-item label="密码">
         <el-input
           v-model="data.user.password"
-          placeholder="请输入appid"
+          placeholder="请输入密码"
           type="password"
           show-password />
       </el-form-item>
