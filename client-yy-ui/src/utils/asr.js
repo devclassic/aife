@@ -32,6 +32,7 @@ class Asr {
         this.fulltext += data.text
       }
       if (data.is_final) {
+        this.fulltext = this.fulltext.replace(/<\|.*?\|>/g, '')
         this.ontext(this.fulltext)
         this.fulltext = ''
       }
