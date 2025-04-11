@@ -151,7 +151,6 @@
     },
     e => {
       data.recordDisabled = true
-      data.newDisabled = true
       console.log('获取录音权限失败', e)
       ElMessageBox.alert('获取录音权限失败，请检查浏览器设置或语音服务配置', '提示')
     },
