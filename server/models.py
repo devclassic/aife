@@ -14,7 +14,6 @@ class User(models.Model):
 class App(models.Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255)
-    appid = fields.CharField(max_length=255)
     token = fields.CharField(max_length=255)
 
 

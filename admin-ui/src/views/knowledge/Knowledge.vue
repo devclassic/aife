@@ -35,11 +35,11 @@
       <el-form-item label="知识库">
         <el-input v-model="data.settings.knowledge_base" placeholder="请输入知识库ID" />
       </el-form-item>
-      <el-form-item label="GPT接口">
-        <el-input v-model="data.settings.api_base" placeholder="请输入GPT接口" />
+      <el-form-item label="Dify接口">
+        <el-input v-model="data.settings.api_base" placeholder="请输入Dify接口" />
       </el-form-item>
-      <el-form-item label="GPT密钥">
-        <el-input v-model="data.settings.api_base_token" placeholder="请输入GPT密钥" />
+      <el-form-item label="Dify密钥">
+        <el-input v-model="data.settings.api_base_token" placeholder="请输入Dify密钥" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -71,7 +71,7 @@
       <el-table-column label="状态" width="90">
         <template #default="scope">
           <el-tag :type="scope.row.trainingAmount > 0 ? 'info' : 'success'">
-            {{ scope.row.trainingAmount > 0 ? '处理中' : '就绪' }}
+            {{ scope.row.indexing_status === 'completed' ? '就绪' : '处理中' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -81,7 +81,7 @@
             title="确认删除？"
             confirm-button-text="确定"
             cancel-button-text="取消"
-            @confirm="removeCollection(scope.row._id)">
+            @confirm="removeCollection(scope.row.id)">
             <template #reference>
               <el-button link type="danger" size="small">删除</el-button>
             </template>
@@ -96,7 +96,7 @@
   </el-dialog>
 
   <el-dialog v-model="data.showUpload" width="500" title="上传文件">
-    <el-form label-width="auto">
+    <!-- <el-form label-width="auto">
       <el-form-item label="处理模式" style="margin-bottom: 10px">
         <el-select v-model="data.trainingType" placeholder="请选择处理模式">
           <el-option
@@ -106,7 +106,7 @@
             :value="item.value" />
         </el-select>
       </el-form-item>
-    </el-form>
+    </el-form> -->
     <el-upload
       ref="upload"
       drag
@@ -119,7 +119,7 @@
         <em>点击上传</em>
       </div>
       <template #tip>
-        <div class="el-upload__tip">请上传常见文档类型（txt, pdf, docx, md, txt, html, csv）</div>
+        <div class="el-upload__tip">请上传常见文档类型（txt, pdf, docx, md, txt, html, csv...等）小于10M</div>
       </template>
     </el-upload>
     <template #footer>
@@ -179,18 +179,12 @@
 
   const uploadOK = async () => {
     try {
-      if (!data.trainingType) {
-        ElMessage.error('请选择处理模式')
-        return
-      }
       data.showUploadBtnLoding = true
       const res = await http.post('/knowledge/add_file_collection', {
         files: data.files,
-        datasetId: data.knowledgeId,
-        trainingType: data.trainingType,
+        dataset_id: data.knowledgeId,
       })
       if (res.data.success) {
-        data.trainingType = ''
         data.files = []
         data.uploadRef.clearFiles()
         getCollections()
@@ -212,7 +206,8 @@
   const removeCollection = async id => {
     data.showCollectionsLoading = true
     const res = await http.post('/knowledge/remove_collection', {
-      id,
+      dataset_id: data.knowledgeId,
+      document_id: id,
     })
     getCollections()
   }
@@ -256,14 +251,7 @@
 
   const getList = async () => {
     const res = await http.post('/knowledge/list')
-    if (res.data.data) {
-      data.list = res.data.data.map(item => ({
-        id: item._id,
-        name: item.name,
-      }))
-    } else {
-      data.list = []
-    }
+    data.list = res.data.data
   }
 
   onMounted(() => {

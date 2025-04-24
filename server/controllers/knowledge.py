@@ -6,6 +6,8 @@ import os
 import json
 from urllib.parse import quote
 from httpx import AsyncClient
+import uuid
+import httpx
 
 router = APIRouter(prefix="/knowledge")
 
@@ -37,16 +39,19 @@ async def list():
     if not knowledge_base:
         return {"success": True, "message": "获取成功", "data": []}
     bases = knowledge_base.split(",")
-    data = []
-    for id in bases:
-        url = f"{api_base}/core/dataset/detail?id={id}"
+
+    async with AsyncClient() as client:
+        url = f"{api_base}/datasets?page=1&limit=10000"
         headers = {"Authorization": f"Bearer {api_base_token}"}
-        # response = requests.get(url, headers=headers)
-        response = None
-        async with AsyncClient() as client:
-            response = await client.get(url, headers=headers)
+        response = await client.get(url, headers=headers)
         result = response.json()
-        data.append(result["data"])
+
+    data = []
+    for base in bases:
+        for item in result["data"]:
+            if item["name"] == base:
+                data.append(item)
+
     return {"success": True, "message": "获取成功", "data": data}
 
 
@@ -55,15 +60,12 @@ async def collection(request: Request):
     data = await request.json()
     api_base = await get_dict("api_base")
     api_base_token = await get_dict("api_base_token")
-    url = f"{api_base}/core/dataset/collection/listV2"
+    url = f"{api_base}/datasets/{data["id"]}/documents?page=1&limit=10000"
     headers = {"Authorization": f"Bearer {api_base_token}"}
-    data = {"datasetId": data["id"], "pageSize": 100000}
-    # response = requests.post(url, data=data, headers=headers)
-    response = None
     async with AsyncClient() as client:
-        response = await client.post(url, data=data, headers=headers)
-    result = response.json()
-    return {"success": True, "message": "获取成功", "data": result["data"]["list"]}
+        response = await client.get(url, headers=headers)
+        result = response.json()
+    return {"success": True, "message": "获取成功", "data": result["data"]}
 
 
 @router.post("/remove_collection")
@@ -71,14 +73,12 @@ async def remove_collection(request: Request):
     data = await request.json()
     api_base = await get_dict("api_base")
     api_base_token = await get_dict("api_base_token")
-    url = f"{api_base}/core/dataset/collection/delete?id={data['id']}"
+    url = f"{api_base}/datasets/{data["dataset_id"]}/documents/{data["document_id"]}"
     headers = {"Authorization": f"Bearer {api_base_token}"}
-    # response = requests.delete(url, headers=headers)
-    response = None
     async with AsyncClient() as client:
         response = await client.delete(url, headers=headers)
     result = response.json()
-    return {"success": True, "message": "删除成功", "data": result["data"]}
+    return {"success": True, "message": "删除成功", "data": result}
 
 
 @router.post("/add_file_collection")
@@ -86,26 +86,19 @@ async def add_file_collection(request: Request):
     data = await request.json()
     api_base = await get_dict("api_base")
     api_base_token = await get_dict("api_base_token")
-    url = f"{api_base}/core/dataset/collection/create/localFile"
+    url = f"{api_base}/datasets/{data["dataset_id"]}/document/create-by-file"
     headers = {"Authorization": f"Bearer {api_base_token}"}
-    send_data = {
-        "data": json.dumps(
-            {"datasetId": data["datasetId"], "trainingType": data["trainingType"]}
-        )
-    }
-    localFiles = data["files"]
-    for file in localFiles:
+    sdata = {"indexing_technique": "high_quality"}
+    send_data = {"data", json.dumps(sdata)}
+    client = httpx.Client()
+    for file in data["files"]:
         files = {
             "file": (quote(os.path.basename(file)), open(file, "rb")),
         }
-        # response = requests.post(url, data=send_data, files=files, headers=headers)
-        response = None
-        async with AsyncClient() as client:
-            response = await client.post(
-                url, data=send_data, files=files, headers=headers
-            )
+        response = client.post(url, data=send_data, files=files, headers=headers)
         result = response.json()
-    return {"success": True, "message": "添加成功", "data": result}
+        print(result)
+    return {"success": True, "message": "添加成功"}
 
 
 @router.post("/upload")

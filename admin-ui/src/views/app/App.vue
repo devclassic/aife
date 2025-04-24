@@ -22,7 +22,6 @@
   <el-table :data="data.list" ref="list" border stripe>
     <el-table-column type="selection" width="38" />
     <el-table-column prop="name" label="名称" />
-    <el-table-column prop="appid" label="AppID" />
     <el-table-column prop="token" label="Token" show-overflow-tooltip />
     <el-table-column label="操作">
       <template #default="scope">
@@ -57,9 +56,6 @@
       <el-form-item label="名称">
         <el-input v-model="data.app.name" placeholder="请输入名称" />
       </el-form-item>
-      <el-form-item label="appid">
-        <el-input v-model="data.app.appid" placeholder="请输入appid" />
-      </el-form-item>
       <el-form-item label="token">
         <el-input v-model="data.app.token" placeholder="请输入token" />
       </el-form-item>
@@ -83,7 +79,6 @@
     editType: 'add',
     app: {
       name: '',
-      appid: '',
       token: '',
     },
     pager: {
@@ -112,7 +107,6 @@
     data.editType = 'add'
     data.app = {
       name: '',
-      appid: '',
       token: '',
     }
   }
