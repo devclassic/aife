@@ -88,15 +88,12 @@ async def add_file_collection(request: Request):
     api_base_token = await get_dict("api_base_token")
     url = f"{api_base}/datasets/{data["dataset_id"]}/document/create-by-file"
     headers = {"Authorization": f"Bearer {api_base_token}"}
-    sdata = {"indexing_technique": "high_quality"}
-    send_data = {"data", json.dumps(sdata)}
+    send_data = {"data": json.dumps({"indexing_technique": "high_quality"})}
     for file in data["files"]:
         files = {
-            "file": (quote(os.path.basename(file)), open(file, "rb")),
+            "file": (os.path.basename(file), open(file, "rb")),
         }
         response = httpx.post(url, data=send_data, files=files, headers=headers)
-        result = response.json()
-        print(result)
     return {"success": True, "message": "添加成功"}
 
 
