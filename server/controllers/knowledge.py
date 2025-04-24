@@ -90,12 +90,11 @@ async def add_file_collection(request: Request):
     headers = {"Authorization": f"Bearer {api_base_token}"}
     sdata = {"indexing_technique": "high_quality"}
     send_data = {"data", json.dumps(sdata)}
-    client = httpx.Client()
     for file in data["files"]:
         files = {
             "file": (quote(os.path.basename(file)), open(file, "rb")),
         }
-        response = client.post(url, data=send_data, files=files, headers=headers)
+        response = httpx.post(url, data=send_data, files=files, headers=headers)
         result = response.json()
         print(result)
     return {"success": True, "message": "添加成功"}
