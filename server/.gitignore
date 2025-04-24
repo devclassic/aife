@@ -5,3 +5,5 @@ public
 main.spec
 dist
 build
+database
+uploads
