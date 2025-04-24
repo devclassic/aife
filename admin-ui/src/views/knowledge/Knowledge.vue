@@ -110,6 +110,7 @@
     <el-upload
       ref="upload"
       drag
+      multiple
       :headers="{ token }"
       :action="`${api_base_url}/knowledge/upload`"
       :on-success="uploadSuccess">
