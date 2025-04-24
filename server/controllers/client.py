@@ -49,7 +49,6 @@ async def chat(request: Request):
     if not app:
         return {"success": False, "message": "应用不存在"}
 
-    appid = app.appid
     token = app.token
     account_id = data.get("account_id")
     chatid = data.get("chatid")
@@ -60,11 +59,12 @@ async def chat(request: Request):
         "question": question,
         "question_time": datetime.now(),
     }
-    url = f"{api_base}/v1/chat/completions?appId={appid}"
+    url = f"{api_base}/chat-messages"
     data = {
-        "model": "deepseek-r1:14b",
-        "chatId": chatid,
-        "messages": [{"role": "user", "content": question}],
+        "user": account_id,
+        "inputs": {},
+        "query": question,
+        "response_mode": "blocking",
     }
     headers = {
         "Authorization": f"Bearer {token}",
@@ -74,7 +74,7 @@ async def chat(request: Request):
     async with AsyncClient(timeout=None) as client:
         res = await client.post(url, json=data, headers=headers)
         res = res.json()
-    text = res["choices"][0]["message"]["content"]
+    text = res["answer"]
     history["answer"] = text
     history["answer_time"] = datetime.now()
     await History.create(**history)

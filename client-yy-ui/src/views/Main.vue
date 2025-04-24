@@ -98,7 +98,7 @@
       chatid: data.chatId,
       question: qa.question,
     })
-    qa.answer = md.render(res.data.data)
+    qa.answer = md.render(res.data.data.replace(/<think>[\s\S]*?<\/think>/g, ''))
     data.qas = [...data.qas]
     data.recordDisabled = false
     data.newDisabled = false
