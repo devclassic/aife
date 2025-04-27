@@ -93,7 +93,10 @@ async def add_file_collection(request: Request):
         files = {
             "file": (os.path.basename(file), open(file, "rb")),
         }
-        response = httpx.post(url, data=send_data, files=files, headers=headers)
+        async with AsyncClient() as client:
+            response = await client.post(
+                url, data=send_data, files=files, headers=headers
+            )
     return {"success": True, "message": "添加成功"}
 
 
